@@ -1,0 +1,16 @@
+{
+    "name": "mi-squared/new-leaf-importer",
+    "description": "Implementation of mi2 importer for NLBH",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Ken Chapple",
+            "email": "ken.chapple@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {"Mi2\\NewLeafImport\\": "src/"}
+    }
+}
