@@ -1,7 +1,7 @@
 {
     "name": "mi-squared/new-leaf-importer",
     "description": "Implementation of mi2 importer for NLBH",
-    "type": "library",
+    "type": "openemr-module",
     "authors": [
         {
             "name": "Ken Chapple",

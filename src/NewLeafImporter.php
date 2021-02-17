@@ -3,12 +3,28 @@
 
 namespace Mi2\NewLeafImport;
 
+use Mi2\Import\ImporterServiceInterface;
 use Mi2\Import\Models\Response;
 
-class NewLeafImporter implements ImportsPatientsInterface
+class NewLeafImporter implements ImporterServiceInterface
 {
     protected $count = 0;
     protected $columns = [];
+
+    /**
+     * We only support CSV
+     * 
+     * @param $extension
+     * @return bool
+     */
+    public function supports($extension)
+    {
+        if ($extension == 'csv') {
+            return true;
+        }
+
+        return false;
+    }
 
     public function importPatient(array $row)
     {
