@@ -3,163 +3,209 @@
 
 namespace Mi2\NewLeafImport;
 
-use Mi2\Import\ImporterServiceInterface;
+use Mi2\Import\Interfaces\ImporterServiceInterface;
+use Mi2\Import\Interfaces\ColumnMapperInterface;
+use Mi2\Import\Models\Batch;
+use Mi2\Import\Models\Logger;
 use Mi2\Import\Models\Response;
+use Mi2\Import\Traits\InteractsWithCSVTrait;
+use Mi2\Import\Traits\InteractsWithLists;
+use Mi2\Import\Traits\InteractsWithLogger;
+use OpenEMR\Services\PatientService;
 
-class NewLeafImporter implements ImporterServiceInterface
+class NewLeafImporter implements ImporterServiceInterface, ColumnMapperInterface
 {
+    use InteractsWithLogger, InteractsWithCSVTrait, InteractsWithLists;
+
     protected $count = 0;
-    protected $columns = [];
+    protected $patientService;
+    protected static $column_mapping = [
+        "First Name" => "fname",
+        "Last name" => "lname",
+        "DOB" => "DOB",
+        "Gender (UNK = unknown)" => "sex",
+        "Ethnicity (W = white/caucasian, A = asian, B = African-American/black, H = Hispanic, O = other, UNK = unknown)" => "ethnicity",
+        "Parent / Guardian Name (Relationship)" => "guardiansname",
+        "Address Line 1" => "street",
+        "Address Line 2" => "city", // Contains city and state
+        "County" => "county",
+        "Country (Mail)" => "country_code",
+        "Address Line 3" => "postal_code",
+        "Primary Phone" => "phone_home",
+        "Alt. Phone" => "phone_cell",
+        "Email Address" => "email",
 
-    /**
-     * We only support CSV
-     * 
-     * @param $extension
-     * @return bool
-     */
-    public function supports($extension)
+        "BC" => null,
+        "C" => null,
+        "RTA" => null,
+        "Activity Notes" => null,
+        "A / Child" => null,
+        "Primary Insurance" => null,
+        "Primary Ins No" => null,
+        "Secondary Insurance" => null,
+        "Secondary Insurance Number" => null,
+        "Relation to/Address of Insured" => null,
+        "Insurance Notes" => null,
+        "County Code" => null,
+        "Monthly Insurance Checks" => null,
+        "Reduced Fee program" => null,
+        "Co-pay Counseling" => null,
+        "Co-pay Psychiatry" => null,
+        "Referral Date" => null,
+        "Referral Source Code" => null,
+        "Referral Source" => null,
+        "PCP Info" => null,
+        "MCO or PCP NPI (MUST for M and HC)" => null,
+        "MCO or PCP Carolina Access No. (MUST for M and HC)" => null,
+        "Psychiatry Contact Preference" => null,
+        "Alt. Address" => null,
+        "Reason for Referral" => null,
+        "Assigned" => null,
+        "1st Visit Contact w/ Referral Source" => null,
+        "Admit Date" => null,
+        "Admit GAF" => null,
+        "Face Sheet" => null,
+        "Consents / Rights" => null,
+        "Assessment" => null,
+        "Treatment Plan" => null,
+        "Assmt Case Note" => null,
+        "TX Plan Expires" => null,
+        "PCP ROI (\"S\"igned, \"D\"eclined, \"N\"othing)" => null,
+        "ICD-10 Therapy DX" => null,
+        "ICD-9 Therapy DX" => null,
+        "Psychiatric DX" => null,
+        "Most Recent Order for Svc" => null,
+        "Counseling ORF (current year)" => null,
+        "Psych ORF (current year)" => null,
+        "Reauthorization" => null,
+        "Employment (UNK = unknown, S = student, R = retired, E = employed, U = unemployed)" => null,
+        "D/C Date" => null,
+        "D/C GAF" => null,
+        "D/C Alliance" => null,
+        "Notes" => null,
+        "Last Date of Service" => null,
+    ];
+
+    public function __construct()
     {
-        if ($extension == 'csv') {
-            return true;
-        }
-
-        return false;
+        $this->patientService = new PatientService();
     }
 
-    public function importPatient(array $row)
-    {
-        // The first row has columns, so set the columns array if we're on row 1
-        if ($this->count === 0) {
-            //combine the arrays using array_combine
-            $this->columns = $row;
-            $response = new Response();
-        } else {
-            $insert_base = array_combine($this->columns, $row);
-            $patient_data = $this->buildPatientDataTable($insert_base);
-            $response = $this->importPatientData($patient_data);
-        }
 
+    /**
+     * To use the trait InteractsWithCSV, have to implement this
+     */
+    public function getColumnMapper()
+    {
+        return $this;
+    }
+
+    public function get_column_mapping()
+    {
+        return self::$column_mapping;
+    }
+
+    public function get_db_field($column_header_name)
+    {
+        return self::$column_mapping[$column_header_name];
+    }
+
+    public function import_row($csv_row)
+    {
+        if ($csv_row['fname'] == '' && $csv_row['lname'] == '' && $csv_row['DOB'] == '') {
+            return new Response();
+        }
+        $patient_data = $this->buildPatientDataTable($csv_row);
+        $response = $this->importPatientData($patient_data);
         $this->count++;
 
         return $response;
     }
 
     //This returns the demographic information for a single patient.
-    protected function buildPatientDataTable($array)
+    protected function buildPatientDataTable($patient_data)
     {
-        $patient_data = array();
-
-        foreach ($array as $key => $val) {
-
-            if (trim(strtolower($key)) == 'first name') {
-                $patient_data['fname'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'last name')) {
-                $patient_data['lname'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'activity notes')) {
-                $patient_data['billing_note'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'dob')) {
-                $patient_data['dob'] = date("Y-m-d", strtotime($val));
-
-            } else if ((trim(strtolower($key)) == 'county')) {
-                $patient_data['county'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'address line 1')) {
-                $patient_data['street'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'address line 2')) {
-                //handle the city and state
-                $city = explode(' ', $val);
-                $patient_data['state'] = array_pop($city);
-                $city = implode(" ", $city);
-                $patient_data['city'] = $city;
-
-            } else if ((trim(strtolower($key)) == 'address line 3')) {
-                $patient_data['postal_code'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'primary phone')) {
-                $patient_data['phone_home'] = $val;
-
-            } else if ((trim(strtolower($key)) == 'email address')) {
-                $patient_data['email'] = $val;
-
-            } else if ((trim(strtolower($key)) == strtolower('Parent / Guardian Name (Relationship)'))) {
-                $guardian_array = explode(' ', $val);
-                $patient_data['guardianrelationship'] = array_pop($guardian_array);
-                $name = implode(" ", $guardian_array);
-                $patient_data['guardiansname'] = $name;
-
-            } else if (strpos($key, 'Gender') !== false) {
-                if ($val == "M")
-                    $patient_data['sex'] = "Male";
-                else if ($val == "F")
-                    $patient_data['sex'] = "Female";
-                else $patient_data['sex'] = '';
-
-            } else if ((strpos(trim(strtolower($key)), 'ethnicity')) !== false) {
-
-                switch ($val) {
-                    case "H":
-                        $patient_data['ethnicity'] = 'hisp_or_latin';
-                        break;
-                    case "B" or "W":
-                        $patient_data['ethnicity'] = 'not_hisp_or_latin';
-                    default:
-                        $patient_data['ethnicity'] = '';
-                }
+        $mapped_data = [];
+        foreach ($patient_data as $spreadsheet_column_name => $value) {
+            // Get the database column name for this column in the spreadsheet
+            $mapped_key = self::$column_mapping[$spreadsheet_column_name];
+            if ($mapped_key !== null) {
+                // if the mapped key is null, we don't care about it.
+                $mapped_data[$mapped_key] = $value;
             }
         }
 
-        return $patient_data;
+        // For context in error messages, get the patient name
+        $patient_name = $mapped_data['fname'] . " " . $mapped_data['lname'];
+
+        // After the initial mapping, we need to do some additional formatting
+        $mapped_data['DOB'] = date("Y-m-d", strtotime($mapped_data['DOB']));
+
+        if ($mapped_data['sex'] == "M") {
+            $mapped_data['sex'] = "Male";
+        } else if ($mapped_data['sex'] == "F") {
+            $mapped_data['sex'] = "Female";
+        } else {
+            $mapped_data['sex'] = '';
+        }
+
+        // handle the city and state
+        $city = explode(' ', $mapped_data['city']);
+        $mapped_data['state'] = array_pop($city);
+        $city = implode(" ", $city);
+        $mapped_data['city'] = $city;
+
+        $guardian_array = explode(' ', $mapped_data['guardiansname']);
+        $mapped_data['guardianrelationship'] = array_pop($guardian_array);
+        $name = implode(" ", $guardian_array);
+        $mapped_data['guardiansname'] = $name;
+
+        switch ($mapped_data['ethnicity']) {
+            case "H":
+                $mapped_data['ethnicity'] = 'hisp_or_latin';
+                break;
+            case "B" or "W":
+                $mapped_data['ethnicity'] = 'not_hisp_or_latin';
+            default:
+                $mapped_data['ethnicity'] = '';
+        }
+
+        // $mapped_data['billing_note'] = "Activity Notes";
+
+        return $mapped_data;
     }
 
-    protected function importPatientData($patient_data){
+    public function importPatientData($patient_data)
+    {
+        // Try to match ContactID, or Fname/Lname/DOB
+        $findPatient = "SELECT fname, lname, pubpid, pid
+            FROM patient_data
+            WHERE (fname = ? AND lname = ? AND DOB = ?)
+            ORDER BY `date` DESC
+            LIMIT 1";
 
-        //check if the lname, fname, dob exists in the patient_data table
-        $sql = "Select * from patient_data where lname = ? and fname = ? and dob = ? ";
-        $res = sqlStatement($sql, array($patient_data['lname'], $patient_data['fname'], $patient_data['dob']));
-        $numRows = sqlNumRows($res);
-
-        $keys = implode(', ', array_keys($patient_data));
-        $values = "'" . implode("','", array_values($patient_data)) . "'";
-        $binding = '';
-        $update = "Update patient_data set " ;
-        foreach($patient_data as $index => $value ) {
-
-            //Here we skip the insurance array and ignore it for the ptData array
-
-            $binding .= "?, ";
-            $update .= " $index = ?,";
+        $result = sqlQuery($findPatient, [
+            $patient_data['fname'],
+            $patient_data['lname'],
+            $patient_data['DOB']
+        ]);
+        $pid = null;
+        if ($result !== false) {
+            // We found a patient, so use that
+            $pid = $result['pid'];
+        } else {
+            $patient_name = $patient_data['fname'] . " " . $patient_data['lname'];
+            $this->getLogger()->addMessage("No match found for `$patient_name`, creating new patient");
         }
 
-
-        // if a record exists we will update, else we will insert
-        if($numRows > 0 ){
-            $row = sqlFetchArray($res);
-            $update = substr($update, 0, -1);
-            $update .= " where pid = {$row['pid']} ";
-            $success = sqlStatement($update, array_values($patient_data));
-            return array('action' => 'update', 'pid' => $row['pid'], 'lname' => $patient_data['lname'], 'fname' => $patient_data['fname']  );
-
-        }else{
-            //this is new so we need to get a new pid
-            $pid = "select max(pid) as pid from patient_data";
-            $newPid = sqlQuery($pid)['pid'] +  1;
-            $patient_data = array_merge($patient_data, array('pid' => $newPid));
-            //here we add the pid since this is a new patient
-            $keys .= ", pid ";
-            $values .= ", " . $newPid;
-            $binding .= "? ";
-            //$values = explode(',', $values);
-
-            $query = 'INSERT into patient_data  ('.$keys.') values ('.$binding.')';
-            $success = sqlStatement($query, array_values($patient_data));
-
-            return array('action' => 'insert', 'pid' => $newPid, 'lname' => $patient_data['lname'], 'fname' => $patient_data['fname']  );
+        $return = null;
+        if ($pid === null) {
+            $return = $this->patientService->insert($patient_data);
+        } else {
+            $patient_data['pid'] = $pid;
+            $return = $this->patientService->databaseUpdate($patient_data);
         }
 
-
+        return $return;
     }
 }
