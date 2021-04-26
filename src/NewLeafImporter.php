@@ -112,8 +112,8 @@ class NewLeafImporter implements ImporterServiceInterface, ColumnMapperInterface
 
     public function import_row($csv_row)
     {
-        if ($csv_row['fname'] == '' && $csv_row['lname'] == '' && $csv_row['DOB'] == '') {
-            return new Response();
+        if ($csv_row['First Name'] == '' && $csv_row['Last name'] == '' && $csv_row['DOB'] == '') {
+            return new Response("Missing one of required fields, (First Name, Last Name, DOB) assuming empty row");
         }
         $patient_data = $this->buildPatientDataTable($csv_row);
         $response = $this->importPatientData($patient_data);
