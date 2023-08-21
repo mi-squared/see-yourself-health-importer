@@ -1,12 +1,12 @@
 <?php
 
 
-namespace Mi2\NewLeafImport;
+namespace Mi2\SeeYourselfHealthImport;
 
 
 use Mi2\Import\AbstractImportProvider;
 
-class NewLeafImportProvider extends AbstractImportProvider
+class SeeYourselfHealthImportProvider extends AbstractImportProvider
 {
     public function getKey()
     {
@@ -15,6 +15,6 @@ class NewLeafImportProvider extends AbstractImportProvider
 
     public function makeImporter()
     {
-        return new NewLeafImporter();
+        return new SeeYourselfHealthImporter();
     }
 }

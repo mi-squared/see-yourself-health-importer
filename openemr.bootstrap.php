@@ -11,4 +11,4 @@
 
 // Initialize the import provider
 $eventDispatcher = $GLOBALS['kernel']->getEventDispatcher();
-(new \Mi2\NewLeafImport\NewLeafImportProvider($eventDispatcher));
+(new \Mi2\SeeYourselfHealthImport\SeeYourselfHealthImportProvider($eventDispatcher));

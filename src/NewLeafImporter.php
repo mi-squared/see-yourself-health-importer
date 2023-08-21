@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Mi2\NewLeafImport;
+namespace Mi2\SeeYourSelfImport;
 
 use Mi2\Import\Interfaces\ImporterServiceInterface;
 use Mi2\Import\Interfaces\ColumnMapperInterface;
@@ -13,77 +13,19 @@ use Mi2\Import\Traits\InteractsWithLists;
 use Mi2\Import\Traits\InteractsWithLogger;
 use OpenEMR\Services\PatientService;
 
-class NewLeafImporter implements ImporterServiceInterface, ColumnMapperInterface
+class SeeYourSelfImporter implements ImporterServiceInterface, ColumnMapperInterface
 {
     use InteractsWithLogger, InteractsWithCSVTrait, InteractsWithLists;
 
     protected $count = 0;
     protected $patientService;
     protected static $column_mapping = [
-        "First Name" => "fname",
-        "Last name" => "lname",
+        "First" => "fname",
+        "Last" => "lname",
         "DOB" => "DOB",
-        "Gender (UNK = unknown)" => "sex",
-        "Ethnicity (W = white/caucasian, A = asian, B = African-American/black, H = Hispanic, O = other, UNK = unknown)" => "ethnicity",
-        "Parent / Guardian Name (Relationship)" => "guardiansname",
-        "Address Line 1" => "street",
-        "Address Line 2" => "city", // Contains city and state
-        "County" => "county",
-        "Country (Mail)" => "country_code",
-        "Address Line 3" => "postal_code",
-        "Primary Phone" => "phone_home",
-        "Alt. Phone" => "phone_cell",
-        "Email Address" => "email",
-
-        "BC" => null,
-        "C" => null,
-        "RTA" => null,
-        "Activity Notes" => null,
-        "A / Child" => null,
-        "Primary Insurance" => null,
-        "Primary Ins No" => null,
-        "Secondary Insurance" => null,
-        "Secondary Insurance Number" => null,
-        "Relation to/Address of Insured" => null,
-        "Insurance Notes" => null,
-        "County Code" => null,
-        "Monthly Insurance Checks" => null,
-        "Reduced Fee program" => null,
-        "Co-pay Counseling" => null,
-        "Co-pay Psychiatry" => null,
-        "Referral Date" => null,
-        "Referral Source Code" => null,
-        "Referral Source" => null,
-        "PCP Info" => null,
-        "MCO or PCP NPI (MUST for M and HC)" => null,
-        "MCO or PCP Carolina Access No. (MUST for M and HC)" => null,
-        "Psychiatry Contact Preference" => null,
-        "Alt. Address" => null,
-        "Reason for Referral" => null,
-        "Assigned" => null,
-        "1st Visit Contact w/ Referral Source" => null,
-        "Admit Date" => null,
-        "Admit GAF" => null,
-        "Face Sheet" => null,
-        "Consents / Rights" => null,
-        "Assessment" => null,
-        "Treatment Plan" => null,
-        "Assmt Case Note" => null,
-        "TX Plan Expires" => null,
-        "PCP ROI (\"S\"igned, \"D\"eclined, \"N\"othing)" => null,
-        "ICD-10 Therapy DX" => null,
-        "ICD-9 Therapy DX" => null,
-        "Psychiatric DX" => null,
-        "Most Recent Order for Svc" => null,
-        "Counseling ORF (current year)" => null,
-        "Psych ORF (current year)" => null,
-        "Reauthorization" => null,
-        "Employment (UNK = unknown, S = student, R = retired, E = employed, U = unemployed)" => null,
-        "D/C Date" => null,
-        "D/C GAF" => null,
-        "D/C Alliance" => null,
-        "Notes" => null,
-        "Last Date of Service" => null,
+        "Sex" => "sex",
+        "Phone" => "phone",
+        "Email" => "email",
     ];
 
     public function __construct()
@@ -112,7 +54,7 @@ class NewLeafImporter implements ImporterServiceInterface, ColumnMapperInterface
 
     public function import_row($csv_row)
     {
-        if ($csv_row['First Name'] == '' && $csv_row['Last name'] == '' && $csv_row['DOB'] == '') {
+        if ($csv_row['First'] == '' && $csv_row['Last'] == '' && $csv_row['DOB'] == '') {
             return new Response("Missing one of required fields, (First Name, Last Name, DOB) assuming empty row");
         }
         $patient_data = $this->buildPatientDataTable($csv_row);
@@ -141,7 +83,7 @@ class NewLeafImporter implements ImporterServiceInterface, ColumnMapperInterface
         // After the initial mapping, we need to do some additional formatting
         $mapped_data['DOB'] = date("Y-m-d", strtotime($mapped_data['DOB']));
 
-        if ($mapped_data['sex'] == "M" || strtolower(mapped_data['sex']) == "male") {
+        if ($mapped_data['sex'] == "M" || strtolower($mapped_data['sex']) == "male") {
             $mapped_data['sex'] = "Male";
         } else if ($mapped_data['sex'] == "F" || strtolower($mapped_data['sex']) == "memale") {
             $mapped_data['sex'] = "Female";
