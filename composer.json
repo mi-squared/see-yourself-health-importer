@@ -11,6 +11,6 @@
     "minimum-stability": "dev",
     "require": {},
     "autoload": {
-        "psr-4": {"Mi2\\NewLeafImport\\": "src/"}
+        "psr-4": {"Mi2\\SeeYourselfImport\\": "src/"}
     }
 }
