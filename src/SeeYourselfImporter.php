@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Mi2\SeeYourSelfImport;
+namespace Mi2\SeeYourselfImport;
 
 use Mi2\Import\Interfaces\ImporterServiceInterface;
 use Mi2\Import\Interfaces\ColumnMapperInterface;
@@ -13,7 +13,7 @@ use Mi2\Import\Traits\InteractsWithLists;
 use Mi2\Import\Traits\InteractsWithLogger;
 use OpenEMR\Services\PatientService;
 
-class SeeYourSelfImporter implements ImporterServiceInterface, ColumnMapperInterface
+class SeeYourselfImporter implements ImporterServiceInterface, ColumnMapperInterface
 {
     use InteractsWithLogger, InteractsWithCSVTrait, InteractsWithLists;
 

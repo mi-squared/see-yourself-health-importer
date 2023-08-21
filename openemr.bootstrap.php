@@ -10,5 +10,19 @@
  */
 
 // Initialize the import provider
+
 $eventDispatcher = $GLOBALS['kernel']->getEventDispatcher();
-(new \Mi2\SeeYourselfHealthImport\SeeYourselfHealthImportProvider($eventDispatcher));
+(new \Mi2\SeeYourselfImport\SeeYourselfImportProvider($eventDispatcher));
+
+
+
+
+
+
+
+
+
+
+
+
+
