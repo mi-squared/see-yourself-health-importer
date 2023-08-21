@@ -1,6 +1,6 @@
 <?php
 /**
- * Bootstrap custom New Leaf Importer module.
+ * Bootstrap custom SeeYourself importer based off New Leaf Importer module.
  *
  * @package   OpenEMR
  * @link      http://www.open-emr.org
@@ -10,19 +10,5 @@
  */
 
 // Initialize the import provider
-
 $eventDispatcher = $GLOBALS['kernel']->getEventDispatcher();
 (new \Mi2\SeeYourselfImport\SeeYourselfImportProvider($eventDispatcher));
-
-
-
-
-
-
-
-
-
-
-
-
-
