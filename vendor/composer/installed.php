@@ -3,7 +3,7 @@
         'name' => 'mi-squared/new-leaf-importer',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'eaac403663d664b8c53821856a53fb546f812431',
+        'reference' => '897558ad3f74245a76339fd12229bed468a33536',
         'type' => 'openemr-module',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'mi-squared/new-leaf-importer' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'eaac403663d664b8c53821856a53fb546f812431',
+            'reference' => '897558ad3f74245a76339fd12229bed468a33536',
             'type' => 'openemr-module',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

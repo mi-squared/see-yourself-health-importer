@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Mi2\\NewLeafImport\\' => array($baseDir . '/src'),
+    'Mi2\\SeeYourselfImport\\' => array($baseDir . '/src'),
 );
