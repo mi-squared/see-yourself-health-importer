@@ -1,6 +1,6 @@
 {
-    "name": "mi-squared/see-yourself-health",
-    "description": "Implementation of mi2 importer for NLBH",
+    "name": "mi-squared/see-yourself-health-importer",
+    "description": "Implementation of mi2 importer for See Yourself Health",
     "type": "openemr-module",
     "authors": [
         {

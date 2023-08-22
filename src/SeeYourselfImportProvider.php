@@ -10,7 +10,7 @@ class SeeYourselfImportProvider extends AbstractImportProvider
 {
     public function getKey()
     {
-        return 'new-leaf-importer';
+        return 'see-yourself-health-importer';
     }
 
     public function makeImporter()
