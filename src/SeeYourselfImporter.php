@@ -24,7 +24,7 @@ class SeeYourselfImporter implements ImporterServiceInterface, ColumnMapperInter
         "Last" => "lname",
         "DOB" => "DOB",
         "Sex" => "sex",
-        "Phone" => "phone",
+        "Phone" => "phone_cell",
         "Email" => "email",
     ];
 
